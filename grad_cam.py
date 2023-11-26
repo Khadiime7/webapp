@@ -68,7 +68,7 @@ def import_and_predict(image_data):
         return img_array
 
 # Function to generate Grad-CAM
-def generate_grad_cam(img_array, model, last_conv_layer_name='block5_conv3', pred_index=None):
+def generate_grad_cam(img_array, model, last_conv_layer_name='vgg16', pred_index=None):
     grad_model = tf.keras.models.Model([model.inputs], [model.get_layer(last_conv_layer_name).output, model.output])
 
     with tf.GradientTape() as tape:

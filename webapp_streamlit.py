@@ -15,16 +15,23 @@ loaded_model = tf.keras.models.load_model(model_path)
 lime_explainer = lime_image.LimeImageExplainer()
 
 def preprocess_image(image_path):
-    size = (224,224)    
-    image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
-    img = np.asarray(image)
-    img_array = img[np.newaxis,...]
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
+    img_array = np.array(img) / 255.0
+    img_array = scalar(img_array)  # Apply your custom preprocessing function
+    
+    # Fix the typo here
+    img_array = ImageOps.fit(img_array, (224, 224), Image.Resampling.LANCZOS)
+
+    img_array = np.expand_dims(img_array, axis=0)
+    return img_array
+    
     # img = Image.open(image_path).convert('RGB')
     # img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
     # img_array = np.array(img) / 255.0
     # img_array = scalar(img_array)  # Apply your custom preprocessing function
     # img_array = np.expand_dims(img_array, axis=0)
-    return img_array
+    # return img_array
 
 def predict_fn(images):
     return loaded_model(images)

@@ -70,7 +70,7 @@ def lime_explain(image,model):
 
     # Explain the prediction
     explanation = explainer.explain_instance(
-        img_for_lime, 
+        img_array, 
         predict_fn, 
         top_labels=3,  # Adjust as needed
         hide_color=(0, 0, 0),

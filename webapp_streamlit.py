@@ -2,6 +2,7 @@ import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
+# from keras.preprocessing.image import ImageDataGenerator
 from lime import lime_image
 import numpy as np
 
@@ -13,10 +14,11 @@ loaded_model = tf.keras.models.load_model(model_path)
 lime_explainer = lime_image.LimeImageExplainer()
 
 def preprocess_image(image_path):
-    img = image.load_img(image_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
+    img_array = np.array(img) / 255.0
+    img_array = scalar(img_array)  # Apply your custom preprocessing function
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
     return img_array
 
 def predict_fn(images):

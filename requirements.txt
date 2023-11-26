@@ -1,5 +1,5 @@
-torch==1.10.0
-fastai==2.5.3
-streamlit==1.18.0
+streamlit==0.88.0
+tensorflow==2.14.1
 lime==0.2.0.1
+Pillow
 numpy

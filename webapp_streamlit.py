@@ -9,29 +9,34 @@ from PIL import Image, ImageOps
 
 # Load your trained ResNet model
 model_path = 'kidney.h5'  # Update with the path to your saved model
-loaded_model = tf.keras.models.load_model(model_path)
+resnet_model = tf.keras.models.load_model(model_path)
 
-# Define the LimeImageExplainer
-lime_explainer = lime_image.LimeImageExplainer()
-
-def preprocess_image(image_path):
-    img = Image.open(image_path).convert('RGB')
-    img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
-    img_array = np.array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
-
-def predict_fn(images):
-    return loaded_model(images)
-
+# Define the explain function
 def explain(image_path):
-    # Preprocess the image
-    img_array = preprocess_image(image_path)
+    # Load and preprocess the image
+    img = image.load_img(image_path, target_size=(224, 224))
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = preprocess_input(img_array)
 
-    # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_array[0], predict_fn, top_labels=1, hide_color=0, num_samples=1000)
+    # Get model predictions
+    predictions = resnet_model.predict(img_array)
+    decoded_predictions = decode_predictions(predictions, top=3)[0]
 
-    return explanation
+    # Create a Lime explainer
+    lime_explainer = lime_image.LimeImageExplainer()
+    lime_explanation = lime_explainer.explain_instance(
+        img_array[0],
+        resnet_model.predict,
+        top_labels=1,
+        hide_color=0,
+        num_samples=1000
+    )
+
+    # Clip pixel values to [0.0, 1.0]
+    img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
+
+    return decoded_predictions, lime_explanation, img_array_clipped
 
 # Streamlit app
 st.title("Explainable AI Web App")
@@ -43,34 +48,20 @@ if uploaded_file is not None:
     with open("temp_image.jpg", "wb") as f:
         f.write(uploaded_file.getvalue())
 
-    # Explain the image using Lime
-    lime_explanation = explain("temp_image.jpg")
+    # Explain the image
+    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
 
-        # Display the Lime explanation
+    # Display the model predictions
+    st.subheader("Model Predictions:")
+    for i, (imagenet_id, label, score) in enumerate(predictions):
+        st.write(f"{i + 1}: {label} ({score:.2f})")
+
+    # Display the Lime explanation
     st.subheader("Lime Explanation:")
-    lime_explanation_image = lime_explanation.image
-    lime_explanation_image_clipped = np.clip(lime_explanation_image, 0.0, 1.0)
-    st.image(lime_explanation_image_clipped, caption="Explanation", use_column_width=True)
+    st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
 
-    # Make predictions using the model
-    img_array = preprocess_image("temp_image.jpg")
-    predictions = resnet_model.predict(img_array)
-    
-    # Modify the code to include an additional dimension for the batch size
-    img_array_batch = np.expand_dims(img_array, axis=0)
-    predictions = resnet_model.predict(img_array_batch)
-    
-    predicted_class = np.argmax(predictions)
-    predicted_percentage = predictions[0][predicted_class]
-
-
-    # Display predicted class and percentage
-    st.subheader("Prediction:")
-    st.write(f"Predicted Class: {predicted_class}")
-    st.write(f"Prediction Percentage: {predicted_percentage * 100:.2f}%")
-
-
+ 
     st.success("Explanation generated!")

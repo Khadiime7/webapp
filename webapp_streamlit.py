@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageOps
 
 # Load your trained ResNet model
-model_path = './kidney.h5'  # Update with the path to your saved model
+model_path = './kidney_new.h5'  # Update with the path to your saved model
 loaded_model = tf.keras.models.load_model(model_path)
 
 # Define the LimeImageExplainer

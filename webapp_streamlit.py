@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.applications.resnet50 import ResNet50, decode_predictions, preprocess_input
 from tensorflow.keras.preprocessing import image
 from lime import lime_image
+import shap
 import numpy as np
 
 # Load the pre-trained ResNet50 model
@@ -21,10 +22,8 @@ def explain(image_path):
     decoded_predictions = decode_predictions(predictions, top=3)[0]
 
     # Create a Lime explainer
-    explainer = lime_image.LimeImageExplainer()
-
-    # Explain the image
-    explanation = explainer.explain_instance(
+    lime_explainer = lime_image.LimeImageExplainer()
+    lime_explanation = lime_explainer.explain_instance(
         img_array[0],
         resnet_model.predict,
         top_labels=1,
@@ -35,7 +34,11 @@ def explain(image_path):
     # Clip pixel values to [0.0, 1.0]
     img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
 
-    return decoded_predictions, explanation, img_array_clipped
+    # Create a SHAP explainer
+    shap_explainer = shap.Explainer(resnet_model)
+    shap_values = shap_explainer.shap_values(img_array_clipped)
+
+    return decoded_predictions, lime_explanation, shap_values, img_array_clipped
 
 # Streamlit app
 st.title("Explainable AI Web App")
@@ -48,7 +51,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getvalue())
 
     # Explain the image
-    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
+    predictions, lime_explanation, shap_values, img_array_clipped = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
@@ -58,8 +61,18 @@ if uploaded_file is not None:
     for i, (imagenet_id, label, score) in enumerate(predictions):
         st.write(f"{i + 1}: {label} ({score:.2f})")
 
-    # Display the Lime explanation
-    st.subheader("Lime Explanation:")
-    st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
+    # Display the Lime and SHAP explanations side by side
+    col1, col2 = st.beta_columns(2)
 
-    st.success("Explanation generated!")
+    # Lime explanation
+    with col1:
+        st.subheader("Lime Explanation:")
+        st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
+
+    # SHAP explanation
+    with col2:
+        st.subheader("SHAP Explanation:")
+        shap.image_plot(shap_values, img_array_clipped, show=False)
+        st.pyplot()
+
+    st.success("Explanations generated!")

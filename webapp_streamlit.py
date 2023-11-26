@@ -30,7 +30,7 @@ def prediction_cls(prediction):
 
 with st.sidebar:
         st.image('Stone- (100).jpg')
-        st.title("Mangifera Healthika")
+        st.title("Kidney Diseases")
         st.subheader("Accurate detection of diseases present in the mango leaves. This helps an user to easily detect the disease and identify it's cause.")
 
              
@@ -48,7 +48,7 @@ def prediction_cls(prediction):
 st.set_option('deprecation.showfileUploaderEncoding', False)
 @st.cache(allow_output_mutation=True)
 def load_model():
-    model=tf.keras.models.load_model('kidney_new.h5')
+    model=tf.keras.models.load_model('kidney.h5')
     return model
 with st.spinner('Model is being loaded..'):
     model=load_model()

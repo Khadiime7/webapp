@@ -18,19 +18,8 @@ def preprocess_image(image_path):
     img = Image.open(image_path).convert('RGB')
     img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
     img_array = np.array(img) / 255.0
-    
-    img_array = ImageOps.fit(Image.fromarray((img_array * 255).astype(np.uint8)), (224, 224), Image.LANCZOS)
-    img_array = np.array(img_array) / 255.0
-
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
-    
-    # img = Image.open(image_path).convert('RGB')
-    # img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
-    # img_array = np.array(img) / 255.0
-    # img_array = scalar(img_array)  # Apply your custom preprocessing function
-    # img_array = np.expand_dims(img_array, axis=0)
-    # return img_array
 
 def predict_fn(images):
     return loaded_model(images)

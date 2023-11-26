@@ -74,7 +74,7 @@ def lime_explain(image,model):
         return model.predict(images)
 
     # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_array[0], predict_function, top_labels=1, hide_color=0, num_samples=1000)
+    explanation = lime_explainer.explain_instance(img_array, predict_function, top_labels=1, hide_color=0, num_samples=1000)
 
     return explanation
 

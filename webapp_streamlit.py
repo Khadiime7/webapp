@@ -18,7 +18,6 @@ def preprocess_image(image_path):
     img = Image.open(image_path).convert('RGB')
     img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
     img_array = np.array(img) / 255.0
-    img_array = scalar(img_array)  # Apply your custom preprocessing function
     
     # Fix the typo here
     img_array = ImageOps.fit(img_array, (224, 224), Image.Resampling.LANCZOS)

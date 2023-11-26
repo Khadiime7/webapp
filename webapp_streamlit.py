@@ -69,11 +69,12 @@ def lime_explain(image,model):
     # Load and preprocess the image
     img_array = import_and_predict(image, model)
 
-     # Get predictions from the model
-    prediction = model.predict(img_array)
+    # Create a function that returns the prediction probabilities
+    def predict_function(images):
+        return model.predict(images)
 
     # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_array[0], prediction, top_labels=1, hide_color=0, num_samples=1000)
+    explanation = lime_explainer.explain_instance(img_array[0], predict_function, top_labels=1, hide_color=0, num_samples=1000)
 
     return explanation
 
@@ -85,7 +86,7 @@ else:
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image, model))
     # Explain the image
-    lime_explanation = lime_explain(image,model)
+    lime_explanation = lime_explain(file,model)
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 

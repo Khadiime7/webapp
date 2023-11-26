@@ -1,6 +1,6 @@
 import streamlit as st
 import tensorflow as tf
-#from tensorflow import keras
+from lime import lime_image
 import random
 from PIL import Image, ImageOps
 import numpy as np
@@ -41,14 +41,10 @@ def prediction_cls(prediction):
             
             return key
         
-       
-
-    
-
 st.set_option('deprecation.showfileUploaderEncoding', False)
 @st.cache(allow_output_mutation=True)
 def load_model():
-    model=tf.keras.models.load_model('kidney.h5')
+    model=tf.keras.models.load_model('kidney_new.h5')
     return model
 with st.spinner('Model is being loaded..'):
     model=load_model()
@@ -69,6 +65,15 @@ def import_and_predict(image_data, model):
         img_reshape = img[np.newaxis,...]
         return img_reshape
 
+def lime_explain(img_reshape):
+     # Get predictions from the model
+    prediction = model.predict(img_reshape)
+
+    # Explain the image using Lime
+    explanation = lime_explainer.explain_instance(img_reshape[0], prediction, top_labels=1, hide_color=0, num_samples=1000)
+
+    return explanation
+
         
 if file is None:
     st.text("Please upload an image file")
@@ -76,6 +81,8 @@ else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image, model))
+    # Explain the image
+    lime_explanation = lime_explain("temp_image.jpg")
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 
@@ -95,3 +102,6 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
+    # Display the Lime explanation
+    st.subheader("Lime Explanation:")
+    st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)

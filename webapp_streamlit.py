@@ -87,14 +87,10 @@ else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image))
-    predictions_str = str(predictions)
-    predictions_str = predictions_str.replace(' ',',')
-    predictions_str = predictions_str.replace('[[','[')
-    predictions_str = predictions_str.replace(']]',']')
-    predictions_str = sorted(predictions_str)
+    max_value = np.max(predictions)
     # print(predictions)
     # x = random.randint(98,99)+ random.randint(0,99)*0.01
-    st.sidebar.error("Accuracy : " + str(predictions_str[-1]) + " %")
+    st.sidebar.error("Accuracy : " + str(max_value) + " %")
 
     class_names = ['Cyst','Normal','Stone','Tumor']
 

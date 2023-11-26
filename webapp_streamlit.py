@@ -58,8 +58,8 @@ def lime_explain(image,model):
     # Load and preprocess the image
     img_array = import_and_predict(image)
 
-    #  # Lime expects images in a different format
-    # img_for_lime = img_array[0].astype('double')
+     # Lime expects images in a different format
+    img_for_lime = img_array[0].astype('double')
 
     # Define your prediction function
     def predict_fn(images):
@@ -70,7 +70,7 @@ def lime_explain(image,model):
 
     # Explain the prediction
     explanation = explainer.explain_instance(
-        img_array, 
+        img_for_lime, 
         predict_fn, 
         top_labels=3,  # Adjust as needed
         hide_color=(0, 0, 0),
@@ -78,7 +78,7 @@ def lime_explain(image,model):
         num_samples=1000
     )
 
-    return explanation
+    return explanation.image
 
         
 if file is None:
@@ -107,6 +107,6 @@ else:
         st.sidebar.warning(string)
     
     # Display the Lime explanation
-    lime_explanation = lime_explain(image,model)
+    # lime_explanation = lime_explain(image,model)
     st.subheader("Lime Explanation:")
-    st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
+    st.image(lime_explain(image,model), caption="Explanation", use_column_width=True, clamp=True)

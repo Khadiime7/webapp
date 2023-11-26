@@ -4,7 +4,8 @@ import random
 from PIL import Image, ImageOps
 import numpy as np
 from tensorflow.keras.preprocessing import image
-import shap
+from tensorflow.keras.applications.imagenet_utils import decode_predictions
+from tf_explain.core.grad_cam import GradCAM
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -66,15 +67,11 @@ def import_and_predict(image_data):
         img_array = img[np.newaxis,...]
         return img_array
 
-def explain(image_array, model):
-    # Create a SHAP explainer
-    explainer = shap.Explainer(model)
+def predict(image_array, model):
+    predictions = model.predict(image_array)
+    decoded_predictions = decode_predictions(predictions, top=3)[0]
 
-    # Get SHAP values for the image
-    shap_values = explainer.shap_values(image_array)
-
-    # Plot the SHAP values
-    shap.image_plot(shap_values, -image_array)
+    return decoded_predictions, image_array
         
 if file is None:
     st.text("Please upload an image file")
@@ -101,9 +98,16 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
-    # Generate Xplique explanation
-    # Explain predictions using SHAP
-    explain(import_and_predict(image), model)
+    # Make predictions and get the top class label
+    predictions, img_array = predict(import_and_predict(image),model)
+    # Get the class index of the top prediction
+    top_class_index = predictions[0][0]
 
-    # # Display the explanation
-    # st.image(explanation, caption="Xplique Explanation", use_column_width=True)
+    # Create a GradCAM explainer
+    explainer = GradCAM()
+
+    # Generate GradCAM heatmap
+    grid = explainer.explain((img_array, None), model, class_index=top_class_index)
+
+    # Display the heatmap
+    st.image(grid, caption="GradCAM Heatmap", use_column_width=True)

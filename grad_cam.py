@@ -5,7 +5,7 @@ from PIL import Image, ImageOps
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.imagenet_utils import decode_predictions
-from tf_explain.core.grad_cam import GradCAM
+from captum.attr import IntegratedGradients
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -67,11 +67,19 @@ def import_and_predict(image_data):
         img_array = img[np.newaxis,...]
         return img_array
 
-def predict(image_array, model):
-    predictions = model.predict(image_array)
-    decoded_predictions = decode_predictions(predictions, top=3)[0]
+# Function to perform attribution using Captum
+def perform_attribution(img_array):
+    # Create an IntegratedGradients attribute method
+    ig = IntegratedGradients(model)
 
-    return decoded_predictions, image_array
+    # Get predictions and attributions
+    predictions = model(img_array)
+    attributions, delta = ig.attribute(img_array, target=0, return_convergence_delta=True)
+
+    # Normalize the attributions
+    attributions = np.abs(attributions)
+
+    return predictions.numpy(), attributions[0]
         
 if file is None:
     st.text("Please upload an image file")
@@ -98,16 +106,9 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
-    # Make predictions and get the top class label
-    predictions, img_array = predict(import_and_predict(image),model)
-    # Get the class index of the top prediction
-    top_class_index = predictions[0][0]
+    
+    # Perform attribution
+    predictions, attributions = perform_attribution(import_and_predict(image))
 
-    # Create a GradCAM explainer
-    explainer = GradCAM()
-
-    # Generate GradCAM heatmap
-    grid = explainer.explain((img_array, None), model, class_index=top_class_index)
-
-    # Display the heatmap
-    st.image(grid, caption="GradCAM Heatmap", use_column_width=True)
+    st.write(f"Predictions: {predictions}")
+    st.image(attributions, caption="Attribution Map", use_column_width=True)

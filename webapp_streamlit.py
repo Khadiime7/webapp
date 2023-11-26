@@ -80,12 +80,13 @@ def lime_explain(image,model):
     )
 
     temp, mask = explanation.get_image_and_mask(
-    explanation.top_labels[0], 
-    positive_only=True, 
-    num_features=5, 
-    hide_rest=True)
+        explanation.top_labels[0], 
+        positive_only=True, 
+        num_features=5, 
+        hide_rest=True
+    )
 
-    return explanation.image
+    return temp, mask
 
         
 if file is None:
@@ -115,6 +116,6 @@ else:
         st.sidebar.warning(string)
     
     # Display the Lime explanation
-    # lime_explanation = lime_explain(image,model)
+    temp,mask = lime_explain(image,model)
     st.subheader("Lime Explanation:")
-    st.image(lime_explain(image,model), caption="Explanation", use_column_width=True, clamp=True)
+    st.image(skimage.segmentation.mark_boundaries(temp / 2 + 0.5, mask), caption="Explanation", use_column_width=True, clamp=True)

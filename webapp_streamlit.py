@@ -53,7 +53,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getvalue())
 
     # Explain the image
-    predictions, lime_explanation, shap_values, img_array_clipped = explain("temp_image.jpg")
+    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)

@@ -68,7 +68,7 @@ def import_and_predict(image_data):
         return img_array
 
 # Function to generate Grad-CAM
-def generate_grad_cam(img_array, model, last_conv_layer_name='vgg16', pred_index=None):
+def generate_grad_cam(img_array, model, last_conv_layer_name=model.get_layer('vgg16').layers[-2], pred_index=None):
     grad_model = tf.keras.models.Model([model.inputs], [model.get_layer(last_conv_layer_name).output, model.output])
 
     with tf.GradientTape() as tape:
@@ -125,4 +125,4 @@ else:
     
     heatmap = generate_grad_cam(import_and_predict(image), model, pred_index=class_names[np.argmax(predictions)])
     st.subheader("Grad-CAM Visualization")
-    st.image(apply_grad_cam(img, heatmap), caption="Grad-CAM", use_column_width=True)
+    st.image(apply_grad_cam(image, heatmap), caption="Grad-CAM", use_column_width=True)

@@ -83,5 +83,17 @@ else:
     class_names = ['Cyst','Normal','Stone','Tumor']
 
     string = "Detected Disease : " + class_names[np.argmax(predictions)]
+    if class_names[np.argmax(predictions)] == 'Normal':
+        st.balloons()
+        st.sidebar.success(string)
+
+    elif class_names[np.argmax(predictions)] == 'Cyst':
+        st.sidebar.warning(string)
+    
+    elif class_names[np.argmax(predictions)] == 'Stone':
+        st.sidebar.warning(string)
+    
+    elif class_names[np.argmax(predictions)] == 'Tumor':
+        st.sidebar.warning(string)
     
 

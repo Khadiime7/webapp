@@ -4,3 +4,4 @@ Pillow==9.3.0
 numpy==1.23.5
 protobuf
 lime==0.2.0.1
+xplique==0.2.0 

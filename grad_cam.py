@@ -4,8 +4,7 @@ import random
 from PIL import Image, ImageOps
 import numpy as np
 from tensorflow.keras.preprocessing import image
-from xplique import Xplique
-
+import shap
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -67,14 +66,15 @@ def import_and_predict(image_data):
         img_array = img[np.newaxis,...]
         return img_array
 
-# Function to generate Xplique explanation
-def generate_xplique_explanation(img_path, model):
-    img_array = import_and_predict(img_path)
+def explain(image_array, model):
+    # Create a SHAP explainer
+    explainer = shap.Explainer(model)
 
-    explainer = Xplique(model)
-    explanation = explainer.explain(img_array)
+    # Get SHAP values for the image
+    shap_values = explainer.shap_values(image_array)
 
-    return explanation
+    # Plot the SHAP values
+    shap.image_plot(shap_values, -image_array)
         
 if file is None:
     st.text("Please upload an image file")
@@ -102,7 +102,8 @@ else:
         st.sidebar.warning(string)
     
     # Generate Xplique explanation
-    explanation = generate_xplique_explanation(image, model)
+    # Explain predictions using SHAP
+    explain(import_and_predict(image), model)
 
-    # Display the explanation
-    st.image(explanation, caption="Xplique Explanation", use_column_width=True)
+    # # Display the explanation
+    # st.image(explanation, caption="Xplique Explanation", use_column_width=True)

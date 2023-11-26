@@ -75,15 +75,11 @@ def generate_grad_cam(img_array, model, last_conv_layer_name=model.get_layer('vg
     if pred_index is None:
         pred_index = np.argmax(predictions[0])
 
-    # Retrieve the last convolutional layer
-    last_conv_layer = None
-    for layer in model.layers[::-1]:
-        if isinstance(layer, tf.keras.layers.Conv2D):
-            last_conv_layer = layer
-            break
+    # Get the last layer of the model (fully connected layer before softmax)
+    last_layer = model.layers[-1]
 
-    if last_conv_layer is None:
-        raise ValueError("No convolutional layer found in the model.")
+    # Create a model that maps the input image to the output predictions
+    grad_model = tf.keras.models.Model([model.inputs], [model.output, last_layer.output])
     
     grad_model = tf.keras.models.Model(model.inputs, [last_conv_layer_name, model.output])
 

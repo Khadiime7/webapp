@@ -1,46 +1,29 @@
 import streamlit as st
-import tensorflow as tf
-from tensorflow.keras.applications.resnet50 import ResNet50, decode_predictions, preprocess_input
-from tensorflow.keras.preprocessing import image
+from fastai.vision.all import *
 from lime import lime_image
-import shap
 import numpy as np
 
-# Load the pre-trained ResNet50 model
-resnet_model = ResNet50(weights='imagenet')
+# Load the pretrained xresnet50 model
+learn = cnn_learner(xresnet50, pretrained=True)
+
+# Define the LimeImageExplainer
+lime_explainer = lime_image.LimeImageExplainer()
+
+def preprocess_image(image_path):
+    img = PILImage.create(image_path)
+    return img
+
+def predict_fn(images):
+    return learn.predict(images)[2]
 
 def explain(image_path):
-    # Load and preprocess the image
-    img = image.load_img(image_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
+    # Preprocess the image
+    img = preprocess_image(image_path)
 
-    # Get model predictions
-    predictions = resnet_model.predict(img_array)
-    decoded_predictions = decode_predictions(predictions, top=3)[0]
+    # Explain the image using Lime
+    explanation = lime_explainer.explain_instance(img.to_tensor().permute(1, 2, 0).numpy(), predict_fn, top_labels=1, hide_color=0, num_samples=1000)
 
-    # Clip pixel values to [0.0, 1.0]
-    img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
-
-    # Lime explanation
-    lime_explainer = lime_image.LimeImageExplainer()
-    lime_explanation = lime_explainer.explain_instance(
-        img_array[0],
-        resnet_model.predict,
-        top_labels=1,
-        hide_color=0,
-        num_samples=1000
-    )
-
-    # # SHAP explanation using GradientExplainer
-    # background = np.zeros((1,) + img_array_clipped.shape[1:])
-    # shap_explainer = shap.GradientExplainer(resnet_model, background)
-    # shap_values = shap_explainer.shap_values(img_array_clipped)
-
-    return decoded_predictions, lime_explanation, img_array_clipped
-
-
+    return explanation
 
 # Streamlit app
 st.title("Explainable AI Web App")
@@ -52,16 +35,11 @@ if uploaded_file is not None:
     with open("temp_image.jpg", "wb") as f:
         f.write(uploaded_file.getvalue())
 
-    # Explain the image
-    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
+    # Explain the image using Lime
+    lime_explanation = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
-
-    # Display the model predictions
-    st.subheader("Model Predictions:")
-    for i, (imagenet_id, label, score) in enumerate(predictions):
-        st.write(f"{i + 1}: {label} ({score:.2f})")
 
     # Display the Lime explanation
     st.subheader("Lime Explanation:")
@@ -69,5 +47,4 @@ if uploaded_file is not None:
     lime_explanation_image_clipped = np.clip(lime_explanation_image, 0.0, 1.0)
     st.image(lime_explanation_image_clipped, caption="Explanation", use_column_width=True)
 
-
-    st.success("Explanations generated!")
+    st.success("Explanation generated!")

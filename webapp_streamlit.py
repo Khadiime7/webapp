@@ -90,7 +90,7 @@ else:
     max_value = np.max(predictions)
     # print(predictions)
     # x = random.randint(98,99)+ random.randint(0,99)*0.01
-    st.sidebar.error("Accuracy : " + str(max_value) + " %")
+    st.sidebar.error("Accuracy : " + str(max_value*100) + " %")
 
     class_names = ['Cyst','Normal','Stone','Tumor']
 

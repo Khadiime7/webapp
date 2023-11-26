@@ -56,8 +56,14 @@ if uploaded_file is not None:
     # Make predictions using the model
     img_array = preprocess_image("temp_image.jpg")
     predictions = resnet_model.predict(img_array)
+    
+    # Modify the code to include an additional dimension for the batch size
+    img_array_batch = np.expand_dims(img_array, axis=0)
+    predictions = resnet_model.predict(img_array_batch)
+    
     predicted_class = np.argmax(predictions)
     predicted_percentage = predictions[0][predicted_class]
+
 
     # Display predicted class and percentage
     st.subheader("Prediction:")

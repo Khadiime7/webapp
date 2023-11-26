@@ -19,8 +19,8 @@ def preprocess_image(image_path):
     img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
     img_array = np.array(img) / 255.0
     
-    # Fix the typo here
-    img_array = ImageOps.fit(img_array, (224, 224), Image.Resampling.LANCZOS)
+    img_array = ImageOps.fit(Image.fromarray((img_array * 255).astype(np.uint8)), (224, 224), Image.LANCZOS)
+    img_array = np.array(img_array) / 255.0
 
     img_array = np.expand_dims(img_array, axis=0)
     return img_array

@@ -33,12 +33,12 @@ def explain(image_path):
         num_samples=1000
     )
 
-    # SHAP explanation using GradientExplainer
-    background = np.zeros((1,) + img_array_clipped.shape[1:])
-    shap_explainer = shap.GradientExplainer(resnet_model, background)
-    shap_values = shap_explainer.shap_values(img_array_clipped)
+    # # SHAP explanation using GradientExplainer
+    # background = np.zeros((1,) + img_array_clipped.shape[1:])
+    # shap_explainer = shap.GradientExplainer(resnet_model, background)
+    # shap_values = shap_explainer.shap_values(img_array_clipped)
 
-    return decoded_predictions, lime_explanation, shap_values, img_array_clipped
+    return decoded_predictions, lime_explanation, img_array_clipped
 
 
 

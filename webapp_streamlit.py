@@ -31,7 +31,7 @@ def prediction_cls(prediction):
 with st.sidebar:
         st.image('Stone- (100).jpg')
         st.title("Kidney Diseases")
-        st.subheader("Accurate detection of kidney diseases present in the patients. This helps a doctor to easily detect the disease and identify the location.")
+        st.subheader("Accurate detection of kidney diseases present in patients. This helps a doctor to easily detect the disease and identify the location.")
 
              
         
@@ -48,7 +48,7 @@ def prediction_cls(prediction):
 st.set_option('deprecation.showfileUploaderEncoding', False)
 @st.cache(allow_output_mutation=True)
 def load_model():
-    model=tf.keras.models.load_model('kidney.h5')
+    model=tf.keras.models.load_model('kidney_new.h5')
     return model
 with st.spinner('Model is being loaded..'):
     model=load_model()
@@ -67,8 +67,7 @@ def import_and_predict(image_data, model):
         image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
         img = np.asarray(image)
         img_reshape = img[np.newaxis,...]
-        prediction = model.predict(img_reshape)
-        return prediction
+        return img_reshape
 
         
 if file is None:
@@ -76,7 +75,7 @@ if file is None:
 else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
-    predictions = import_and_predict(image, model)
+    predictions = model.predict(import_and_predict(image, model))
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 
@@ -96,4 +95,3 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
-

@@ -14,29 +14,22 @@ resnet_model = tf.keras.models.load_model(model_path)
 # Define the explain function
 def explain(image_path):
     # Load and preprocess the image
-    img = image.load_img(image_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
+    img_array = preprocess_image(image_path)
 
-    # Get model predictions
+    # Get predictions from the model
     predictions = resnet_model.predict(img_array)
-    decoded_predictions = decode_predictions(predictions, top=3)[0]
 
-    # Create a Lime explainer
-    lime_explainer = lime_image.LimeImageExplainer()
-    lime_explanation = lime_explainer.explain_instance(
-        img_array[0],
-        resnet_model.predict,
-        top_labels=1,
-        hide_color=0,
-        num_samples=1000
-    )
+    # Get the top predicted class and its probability
+    top_class = np.argmax(predictions)
+    top_probability = predictions[0, top_class]
 
-    # Clip pixel values to [0.0, 1.0]
-    img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
+    # Print or use the top class and probability as needed
+    print(f"Top Class: {top_class}, Probability: {top_probability}")
 
-    return decoded_predictions, lime_explanation, img_array_clipped
+    # Explain the image using Lime
+    explanation = lime_explainer.explain_instance(img_array[0], predict_fn, top_labels=1, hide_color=0, num_samples=1000)
+
+    return predictions, explanation, img_array
 
 # Streamlit app
 st.title("Explainable AI Web App")

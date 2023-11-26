@@ -58,7 +58,7 @@ st.write("""
          )
 
 file = st.file_uploader("", type=["jpg", "png"])
-def import_and_predict(image_data, model):
+def import_and_predict(image_data):
         size = (224,224)    
         image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
         img = np.asarray(image)
@@ -67,14 +67,26 @@ def import_and_predict(image_data, model):
 
 def lime_explain(image,model):
     # Load and preprocess the image
-    img_array = import_and_predict(image, model)
+    img_array = import_and_predict(image)
 
-    # Create a function that returns the prediction probabilities
-    def predict_function(images):
+     # Lime expects images in a different format
+    img_for_lime = img_array[0].astype('double')
+
+    # Define your prediction function
+    def predict_fn(images):
         return model.predict(images)
 
-    # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_array, predict_function, top_labels=1, hide_color=0, num_samples=1000)
+    # Create a LimeImageExplainer
+    explainer = lime_image.LimeImageExplainer()
+
+    # Explain the prediction
+    explanation = explainer.explain_instance(
+        img_for_lime, 
+        predict_fn, 
+        top_labels=1,  # Adjust as needed
+        hide_color=0, 
+        num_samples=1000
+    )
 
     return explanation
 
@@ -84,7 +96,7 @@ if file is None:
 else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
-    predictions = model.predict(import_and_predict(image, model))
+    predictions = model.predict(import_and_predict(image))
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 
@@ -105,6 +117,6 @@ else:
         st.sidebar.warning(string)
     
     # Display the Lime explanation
-    lime_explanation = lime_explain(file,model)
+    lime_explanation = lime_explain(image,model)
     st.subheader("Lime Explanation:")
     st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)

@@ -46,6 +46,7 @@ st.write("""
          )
 
 file = st.file_uploader("", type=["jpg", "png"])
+
 def import_and_predict(image_data):
         size = (224,224)    
         image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
@@ -57,8 +58,8 @@ def lime_explain(image,model):
     # Load and preprocess the image
     img_array = import_and_predict(image)
 
-     # Lime expects images in a different format
-    img_for_lime = img_array[0].astype('double')
+    #  # Lime expects images in a different format
+    # img_for_lime = img_array[0].astype('double')
 
     # Define your prediction function
     def predict_fn(images):

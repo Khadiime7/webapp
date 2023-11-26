@@ -85,8 +85,6 @@ else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image, model))
-    # Explain the image
-    lime_explanation = lime_explain(file,model)
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 
@@ -107,5 +105,6 @@ else:
         st.sidebar.warning(string)
     
     # Display the Lime explanation
+    lime_explanation = lime_explain(file,model)
     st.subheader("Lime Explanation:")
     st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)

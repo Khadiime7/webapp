@@ -5,6 +5,7 @@ from tensorflow.keras.applications.resnet50 import preprocess_input, decode_pred
 # from keras.preprocessing.image import ImageDataGenerator
 from lime import lime_image
 import numpy as np
+from PIL import Image, ImageOps
 
 # Load your trained ResNet model
 model_path = './kidney.h5'  # Update with the path to your saved model
@@ -14,11 +15,15 @@ loaded_model = tf.keras.models.load_model(model_path)
 lime_explainer = lime_image.LimeImageExplainer()
 
 def preprocess_image(image_path):
-    img = Image.open(image_path).convert('RGB')
-    img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
-    img_array = np.array(img) / 255.0
-    img_array = scalar(img_array)  # Apply your custom preprocessing function
-    img_array = np.expand_dims(img_array, axis=0)
+    size = (224,224)    
+    image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
+    img = np.asarray(image)
+    img_array = img[np.newaxis,...]
+    # img = Image.open(image_path).convert('RGB')
+    # img = img.resize((224, 224))  # Adjust to the input size of your ResNet model
+    # img_array = np.array(img) / 255.0
+    # img_array = scalar(img_array)  # Apply your custom preprocessing function
+    # img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
 def predict_fn(images):

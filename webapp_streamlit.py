@@ -84,7 +84,7 @@ def lime_explain(image,model):
         img_for_lime, 
         predict_fn, 
         top_labels=3,  # Adjust as needed
-        hide_color=0,
+        hide_color=(0, 0, 0),
         num_features= 5,
         num_samples=1000
     )

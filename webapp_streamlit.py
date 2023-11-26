@@ -31,7 +31,7 @@ def prediction_cls(prediction):
 with st.sidebar:
         st.image('Stone- (100).jpg')
         st.title("Kidney Diseases")
-        st.subheader("Accurate detection of diseases present in the mango leaves. This helps an user to easily detect the disease and identify it's cause.")
+        st.subheader("Accurate detection of kidney diseases present in the patients. This helps a doctor to easily detect the disease and identify the location.")
 
              
         

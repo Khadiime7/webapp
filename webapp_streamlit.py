@@ -9,7 +9,6 @@ import numpy as np
 # Load the pre-trained ResNet50 model
 resnet_model = ResNet50(weights='imagenet')
 
-# Define the explain function
 def explain(image_path):
     # Load and preprocess the image
     img = image.load_img(image_path, target_size=(224, 224))
@@ -21,7 +20,10 @@ def explain(image_path):
     predictions = resnet_model.predict(img_array)
     decoded_predictions = decode_predictions(predictions, top=3)[0]
 
-    # Create a Lime explainer
+    # Clip pixel values to [0.0, 1.0]
+    img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
+
+    # Lime explanation
     lime_explainer = lime_image.LimeImageExplainer()
     lime_explanation = lime_explainer.explain_instance(
         img_array[0],
@@ -31,14 +33,13 @@ def explain(image_path):
         num_samples=1000
     )
 
-    # Clip pixel values to [0.0, 1.0]
-    img_array_clipped = np.clip(img_array[0], 0.0, 1.0)
-
-    # Create a SHAP explainer
-    shap_explainer = shap.Explainer(resnet_model)
+    # SHAP explanation using DeepExplainer
+    background = np.zeros((1,) + img_array_clipped.shape[1:])
+    shap_explainer = shap.DeepExplainer(resnet_model, background)
     shap_values = shap_explainer.shap_values(img_array_clipped)
 
     return decoded_predictions, lime_explanation, shap_values, img_array_clipped
+
 
 # Streamlit app
 st.title("Explainable AI Web App")

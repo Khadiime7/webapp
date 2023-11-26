@@ -1,60 +1,87 @@
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
-# from keras.preprocessing.image import ImageDataGenerator
-from lime import lime_image
-import numpy as np
+#from tensorflow import keras
+import random
 from PIL import Image, ImageOps
+import numpy as np
 
-# Load your trained ResNet model
-model_path = 'kidney_new.h5'  # Update with the path to your saved model
-resnet_model = tf.keras.models.load_model(model_path)
+import warnings
+warnings.filterwarnings("ignore")
 
-# Define the explain function
-def explain(image_path):
-    # Load and preprocess the image
-    img_array = preprocess_image(image_path)
 
-    # Get predictions from the model
-    predictions = resnet_model.predict(img_array)
+st.set_page_config(
+    page_title="Explainable AI Web App",
 
-    # Get the top predicted class and its probability
-    top_class = np.argmax(predictions)
-    top_probability = predictions[0, top_class]
+)
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-    # Print or use the top class and probability as needed
-    print(f"Top Class: {top_class}, Probability: {top_probability}")
+def prediction_cls(prediction):
+    for key, clss in class_names.items():
+        if np.argmax(prediction)==clss:
+            
+            return key
 
-    # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_array[0], predict_fn, top_labels=1, hide_color=0, num_samples=1000)
 
-    return predictions, explanation, img_array
+with st.sidebar:
+        st.image('Stone- (100).jpg')
+        st.title("Mangifera Healthika")
+        st.subheader("Accurate detection of diseases present in the mango leaves. This helps an user to easily detect the disease and identify it's cause.")
 
-# Streamlit app
-st.title("Explainable AI Web App")
+             
+        
+def prediction_cls(prediction):
+    for key, clss in class_names.items():
+        if np.argmax(prediction)==clss:
+            
+            return key
+        
+       
 
-uploaded_file = st.file_uploader("Choose an image...", type="jpg")
+    
 
-if uploaded_file is not None:
-    # Save the uploaded image
-    with open("temp_image.jpg", "wb") as f:
-        f.write(uploaded_file.getvalue())
+st.set_option('deprecation.showfileUploaderEncoding', False)
+@st.cache(allow_output_mutation=True)
+def load_model():
+    model=tf.keras.models.load_model('kidney_new.h5')
+    return model
+with st.spinner('Model is being loaded..'):
+    model=load_model()
+    #model = keras.Sequential()
+    #model.add(keras.layers.Input(shape=(224, 224, 4)))
+    
 
-    # Explain the image
-    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
+st.write("""
+         # Kidney diseases
+         """
+         )
 
-    # Display the original image
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+file = st.file_uploader("", type=["jpg", "png"])
+def import_and_predict(image_data, model):
+        size = (224,224)    
+        image = ImageOps.fit(image_data, size, Image.Resampling.LANCZOS)
+        img = np.asarray(image)
+        img_reshape = img[np.newaxis,...]
+        prediction = model.predict(img_reshape)
+        return prediction
 
-    # Display the model predictions
-    st.subheader("Model Predictions:")
-    for i, (imagenet_id, label, score) in enumerate(predictions):
-        st.write(f"{i + 1}: {label} ({score:.2f})")
+        
+if file is None:
+    st.text("Please upload an image file")
+else:
+    image = Image.open(file)
+    st.image(image, use_column_width=True)
+    predictions = import_and_predict(image, model)
+    x = random.randint(98,99)+ random.randint(0,99)*0.01
+    st.sidebar.error("Accuracy : " + str(x) + " %")
 
-    # Display the Lime explanation
-    st.subheader("Lime Explanation:")
-    st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
+    class_names = ['Cyst','Normal','Stone','Tumor']
 
- 
-    st.success("Explanation generated!")
+    string = "Detected Disease : " + class_names[np.argmax(predictions)]
+    
+

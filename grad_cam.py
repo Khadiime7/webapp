@@ -5,7 +5,7 @@ from PIL import Image, ImageOps
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.imagenet_utils import decode_predictions
-from captum.attr import IntegratedGradients
+from alibi.explainers import AnchorImage
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -68,18 +68,17 @@ def import_and_predict(image_data):
         return img_array
 
 # Function to perform attribution using Captum
-def perform_attribution(img_array):
-    # Create an IntegratedGradients attribute method
-    ig = IntegratedGradients(model)
+def explain(img_array):
+    # Initialize the explainer
+    explainer = AnchorImage(predict_fn=model.predict, image_shape=(224, 224, 3))
 
-    # Get predictions and attributions
-    predictions = model(img_array)
-    attributions, delta = ig.attribute(img_array, target=0, return_convergence_delta=True)
+    # Generate anchor explanation
+    explanation = explainer.explain(img_array)
 
-    # Normalize the attributions
-    attributions = np.abs(attributions)
+    # Display explanation
+    st.write("Anchors:", explanation['anchor'])
+    st.write("Precision:", explanation['precision'])
 
-    return predictions.numpy(), attributions[0]
         
 if file is None:
     st.text("Please upload an image file")
@@ -108,7 +107,4 @@ else:
     
     
     # Perform attribution
-    predictions, attributions = perform_attribution(import_and_predict(image))
-
-    st.write(f"Predictions: {predictions}")
-    st.image(attributions, caption="Attribution Map", use_column_width=True)
+    explain(import_and_predict(image))

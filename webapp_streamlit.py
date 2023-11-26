@@ -6,7 +6,7 @@ from lime import lime_image
 import numpy as np
 
 # Load your trained ResNet model
-model_path = 'path/to/your/saved_model'  # Update with the path to your saved model
+model_path = './kidney.h5'  # Update with the path to your saved model
 loaded_model = tf.keras.models.load_model(model_path)
 
 # Define the LimeImageExplainer

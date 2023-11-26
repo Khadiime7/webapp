@@ -69,6 +69,22 @@ def import_and_predict(image_data):
 
 # Function to generate Grad-CAM
 def generate_grad_cam(img_array, model, last_conv_layer_name=model.get_layer('vgg16').layers[-2].output, pred_index=None):
+    # Get the class predictions for the image
+    predictions = model(img_array)
+
+    if pred_index is None:
+        pred_index = np.argmax(predictions[0])
+
+    # Retrieve the last convolutional layer
+    last_conv_layer = None
+    for layer in model.layers[::-1]:
+        if isinstance(layer, tf.keras.layers.Conv2D):
+            last_conv_layer = layer
+            break
+
+    if last_conv_layer is None:
+        raise ValueError("No convolutional layer found in the model.")
+    
     grad_model = tf.keras.models.Model(model.inputs, [last_conv_layer_name, model.output])
 
     with tf.GradientTape() as tape:

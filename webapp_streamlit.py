@@ -8,6 +8,7 @@ import numpy as np
 # Load the pre-trained ResNet50 model
 resnet_model = ResNet50(weights='imagenet')
 
+# Define the explain function
 def explain(image_path):
     # Load and preprocess the image
     img = image.load_img(image_path, target_size=(224, 224))
@@ -36,7 +37,6 @@ def explain(image_path):
 
     return decoded_predictions, explanation, img_array_clipped
 
-
 # Streamlit app
 st.title("Explainable AI Web App")
 
@@ -48,7 +48,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getvalue())
 
     # Explain the image
-    predictions, lime_explanation = explain("temp_image.jpg")
+    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
@@ -58,7 +58,6 @@ if uploaded_file is not None:
     for i, (imagenet_id, label, score) in enumerate(predictions):
         st.write(f"{i + 1}: {label} ({score:.2f})")
 
-    # Display the Lime explanation
     # Display the Lime explanation
     st.subheader("Lime Explanation:")
     st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)

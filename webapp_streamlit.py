@@ -65,12 +65,15 @@ def import_and_predict(image_data, model):
         img_reshape = img[np.newaxis,...]
         return img_reshape
 
-def lime_explain(img_reshape):
+def lime_explain(image,model):
+    # Load and preprocess the image
+    img_array = import_and_predict(image, model)
+
      # Get predictions from the model
-    prediction = model.predict(img_reshape)
+    prediction = model.predict(import_and_predict(image, model))
 
     # Explain the image using Lime
-    explanation = lime_explainer.explain_instance(img_reshape[0], prediction, top_labels=1, hide_color=0, num_samples=1000)
+    explanation = lime_explainer.explain_instance(img_array[0], prediction, top_labels=1, hide_color=0, num_samples=1000)
 
     return explanation
 
@@ -82,7 +85,7 @@ else:
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image, model))
     # Explain the image
-    lime_explanation = lime_explain("temp_image.jpg")
+    lime_explanation = lime_explain("temp_image.jpg",model)
     x = random.randint(98,99)+ random.randint(0,99)*0.01
     st.sidebar.error("Accuracy : " + str(x) + " %")
 

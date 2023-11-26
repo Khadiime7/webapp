@@ -1,5 +1,6 @@
 import streamlit as st
 from fastai.vision.all import *
+from fastai.vision.all import cnn_learner, xresnet50
 from lime import lime_image
 import numpy as np
 

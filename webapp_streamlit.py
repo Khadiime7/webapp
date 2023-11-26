@@ -47,8 +47,11 @@ if uploaded_file is not None:
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
 
-    # Display the Lime explanation
+        # Display the Lime explanation
     st.subheader("Lime Explanation:")
-    st.image(lime_explanation.image, caption="Explanation", use_column_width=True)
+    lime_explanation_image = lime_explanation.image
+    lime_explanation_image_clipped = np.clip(lime_explanation_image, 0.0, 1.0)
+    st.image(lime_explanation_image_clipped, caption="Explanation", use_column_width=True)
+
 
     st.success("Explanation generated!")

@@ -21,31 +21,19 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-def prediction_cls(prediction):
-    for key, clss in class_names.items():
-        if np.argmax(prediction)==clss:
-            
-            return key
-
-
 with st.sidebar:
         st.image('Stone- (100).jpg')
         st.title("Kidney Diseases")
         st.subheader("Accurate detection of kidney diseases present in patients. This helps a doctor to easily detect the disease and identify the location.")
 
-             
-        
-def prediction_cls(prediction):
-    for key, clss in class_names.items():
-        if np.argmax(prediction)==clss:
-            
-            return key
-        
+
 st.set_option('deprecation.showfileUploaderEncoding', False)
 @st.cache(allow_output_mutation=True)
+
 def load_model():
     model=tf.keras.models.load_model('kidney.h5')
     return model
+    
 with st.spinner('Model is being loaded..'):
     model=load_model()
     #model = keras.Sequential()

@@ -86,7 +86,6 @@ def lime_explain(image,model):
         top_labels=3,  # Adjust as needed
         hide_color=0,
         num_features= 5,
-        feature_selection = 'highest_weights',
         num_samples=1000
     )
 

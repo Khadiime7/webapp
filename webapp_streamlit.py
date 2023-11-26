@@ -87,6 +87,7 @@ else:
     image = Image.open(file)
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image))
+    predictions = str(predictions)
     predictions = predictions.replace(' ',',')
     predictions = predictions.replace('[[','[')
     predictions = predictions.replace(']]',']')

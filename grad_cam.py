@@ -68,35 +68,24 @@ def import_and_predict(image_data):
         return img_array
 
 # Function to generate Grad-CAM
-def generate_grad_cam(img_array, model, last_conv_layer_name=model.get_layer('vgg16').layers[-2].output, pred_index=None):
-    # Get the class predictions for the image
-    predictions = model(img_array)
-
+def generate_grad_cam(img_array, model, last_conv_layer_name, pred_index=None):
     if pred_index is None:
-        pred_index = np.argmax(predictions[0])
+        pred_index = np.argmax(model(img_array)[0])
 
-    # Get the last layer of the model (fully connected layer before softmax)
-    last_layer = model.layers[-1]
-
-    # Create a model that maps the input image to the output predictions
-    grad_model = tf.keras.models.Model([model.inputs], [model.output, last_layer.output])
-    
-    grad_model = tf.keras.models.Model(model.inputs, [last_conv_layer_name, model.output])
+    last_conv_layer = model.get_layer(last_conv_layer_name)
+    last_conv_layer_model = Model(model.inputs, last_conv_layer.output)
 
     with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img_array)
-        if pred_index is None:
-            pred_index = tf.argmax(predictions[0])
-        class_channel = predictions[:, pred_index]
+        preds, last_conv_layer_output = model(img_array)
+        class_output = preds[:, pred_index]
 
-    grads = tape.gradient(class_channel, conv_outputs)
-    pooled_grads = K.mean(grads, axis=(0, 1, 2))
+    grads = tape.gradient(class_output, last_conv_layer_output)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
 
-    heatmap = tf.reduce_mean(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-    heatmap = np.maximum(heatmap, 0)
-    heatmap /= np.max(heatmap)
+    last_conv_layer_output = last_conv_layer_output[0]
+    heatmap = tf.reduce_mean(last_conv_layer_output * pooled_grads[..., tf.newaxis], axis=-1)
 
-    return heatmap.numpy()
+    return heatmap.numpy(), pred_index
 
 # Function to apply Grad-CAM on the image
 def apply_grad_cam(img, heatmap):
@@ -135,6 +124,6 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
-    heatmap = generate_grad_cam(import_and_predict(image), model, pred_index=class_names[np.argmax(predictions)])
+    heatmap, pred_index = generate_grad_cam(import_and_predict(image), model, 'block5_conv3')
     st.subheader("Grad-CAM Visualization")
     st.image(apply_grad_cam(image, heatmap), caption="Grad-CAM", use_column_width=True)

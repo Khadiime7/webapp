@@ -53,5 +53,16 @@ if uploaded_file is not None:
     lime_explanation_image_clipped = np.clip(lime_explanation_image, 0.0, 1.0)
     st.image(lime_explanation_image_clipped, caption="Explanation", use_column_width=True)
 
+    # Make predictions using the model
+    img_array = preprocess_image("temp_image.jpg")
+    predictions = resnet_model.predict(img_array)
+    predicted_class = np.argmax(predictions)
+    predicted_percentage = predictions[0][predicted_class]
+
+    # Display predicted class and percentage
+    st.subheader("Prediction:")
+    st.write(f"Predicted Class: {predicted_class}")
+    st.write(f"Prediction Percentage: {predicted_percentage * 100:.2f}%")
+
 
     st.success("Explanation generated!")

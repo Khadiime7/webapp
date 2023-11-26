@@ -33,12 +33,12 @@ def explain(image_path):
         num_samples=1000
     )
 
-    # SHAP explanation using GradientExplainer
-    background = np.zeros((1,) + img_array_clipped.shape[1:])
-    shap_explainer = shap.GradientExplainer(resnet_model, background)
-    shap_values = shap_explainer.shap_values(img_array_clipped)
+    # # SHAP explanation using GradientExplainer
+    # background = np.zeros((1,) + img_array_clipped.shape[1:])
+    # shap_explainer = shap.GradientExplainer(resnet_model, background)
+    # shap_values = shap_explainer.shap_values(img_array_clipped)
 
-    return decoded_predictions, lime_explanation,shap_values, img_array_clipped
+    return decoded_predictions, lime_explanation, img_array_clipped
 
 
 
@@ -53,7 +53,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.getvalue())
 
     # Explain the image
-    predictions, lime_explanation,shap_values, img_array_clipped = explain("temp_image.jpg")
+    predictions, lime_explanation, img_array_clipped = explain("temp_image.jpg")
 
     # Display the original image
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
@@ -63,18 +63,8 @@ if uploaded_file is not None:
     for i, (imagenet_id, label, score) in enumerate(predictions):
         st.write(f"{i + 1}: {label} ({score:.2f})")
 
-    # Display the Lime and SHAP explanations side by side
-    col1, col2 = st.beta_columns(2)
-
-    # Lime explanation
-    with col1:
-        st.subheader("Lime Explanation:")
-        st.image(lime_explanation.image, caption="Explanation", use_column_width=True, clamp=True)
-
-    # SHAP explanation
-    with col2:
-        st.subheader("SHAP Explanation:")
-        shap.image_plot(shap_values, img_array_clipped, show=False)
-        st.pyplot()
+    # Display the Lime explanation
+    st.subheader("Lime Explanation:")
+    st.image(lime_explanation.image, caption="Explanation", use_column_width=True)
 
     st.success("Explanations generated!")

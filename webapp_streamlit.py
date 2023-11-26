@@ -85,7 +85,7 @@ def lime_explain(image,model):
         predict_fn, 
         top_labels=1,  # Adjust as needed
         hide_color=0, 
-        num_samples=1000
+        num_samples=5000
     )
 
     return explanation

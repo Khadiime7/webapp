@@ -4,7 +4,7 @@ import random
 from PIL import Image, ImageOps
 import numpy as np
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras import backend as K
+from xplique import Xplique
 
 
 import warnings
@@ -67,37 +67,14 @@ def import_and_predict(image_data):
         img_array = img[np.newaxis,...]
         return img_array
 
-# Function to generate Grad-CAM
-def generate_grad_cam(img_array, model, last_conv_layer_name, pred_index=None):
-    if pred_index is None:
-        pred_index = np.argmax(model(img_array)[0])
+# Function to generate Xplique explanation
+def generate_xplique_explanation(img_path, model):
+    img_array = import_and_predict(img_path)
 
-    last_conv_layer = model.get_layer(last_conv_layer_name)
-    last_conv_layer_model = Model(model.inputs, last_conv_layer.output)
+    explainer = Xplique(model)
+    explanation = explainer.explain(img_array)
 
-    with tf.GradientTape() as tape:
-        preds, last_conv_layer_output = model(img_array)
-        class_output = preds[:, pred_index]
-
-    grads = tape.gradient(class_output, last_conv_layer_output)
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-
-    last_conv_layer_output = last_conv_layer_output[0]
-    heatmap = tf.reduce_mean(last_conv_layer_output * pooled_grads[..., tf.newaxis], axis=-1)
-
-    return heatmap.numpy(), pred_index
-
-# Function to apply Grad-CAM on the image
-def apply_grad_cam(img, heatmap):
-    heatmap = np.uint8(255 * heatmap)
-    heatmap = Image.fromarray(heatmap, 'L').resize((img.width, img.height))
-    heatmap = heatmap.convert("RGB")
-
-    superimposed_img = Image.alpha_composite(img.convert("RGBA"), Image.new("RGBA", img.size, (0, 0, 0, 0)))
-    superimposed_img.paste(heatmap, (0, 0), heatmap)
-
-    return superimposed_img
-
+    return explanation
         
 if file is None:
     st.text("Please upload an image file")
@@ -124,6 +101,8 @@ else:
     elif class_names[np.argmax(predictions)] == 'Tumor':
         st.sidebar.warning(string)
     
-    heatmap, pred_index = generate_grad_cam(import_and_predict(image), model, 'block5_conv3')
-    st.subheader("Grad-CAM Visualization")
-    st.image(apply_grad_cam(image, heatmap), caption="Grad-CAM", use_column_width=True)
+    # Generate Xplique explanation
+    explanation = generate_xplique_explanation(image, model)
+
+    # Display the explanation
+    st.image(explanation, caption="Xplique Explanation", use_column_width=True)

@@ -4,6 +4,7 @@ from lime import lime_image
 import random
 from PIL import Image, ImageOps
 import numpy as np
+import skimage.segmentation
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -71,12 +72,18 @@ def lime_explain(image,model):
     # Explain the prediction
     explanation = explainer.explain_instance(
         img_for_lime, 
-        predict_fn, 
-        top_labels=3,  # Adjust as needed
-        hide_color=(0, 0, 0),
+        model.predict, 
+        top_labels=5,  # Adjust as needed
+        hide_color=0,
         num_features= 5,
         num_samples=1000
     )
+
+    temp, mask = explanation.get_image_and_mask(
+    explanation.top_labels[0], 
+    positive_only=True, 
+    num_features=5, 
+    hide_rest=True)
 
     return explanation.image
 
@@ -88,8 +95,7 @@ else:
     st.image(image, use_column_width=True)
     predictions = model.predict(import_and_predict(image))
     max_value = np.max(predictions)
-    # print(predictions)
-    # x = random.randint(98,99)+ random.randint(0,99)*0.01
+    max_value = round(max_value, 2)
     st.sidebar.error("Accuracy : " + str(max_value*100) + " %")
 
     class_names = ['Cyst','Normal','Stone','Tumor']

@@ -1,2 +1,2 @@
 # webapp
-Explainable AI - image classification
+Explainable AI - Kidney image classification
